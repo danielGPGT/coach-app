@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1EA97A"/>
+      <stop offset="100%" stop-color="#148955"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="112" fill="url(#grad)"/>
+  
+  <!-- Tilted barbell suggesting upward movement -->
+  <g transform="rotate(-15, 256, 256)">
+    <!-- Left weight plate outer -->
+    <rect x="80" y="168" width="72" height="176" rx="12" fill="white"/>
+    <!-- Left weight plate inner -->
+    <rect x="104" y="192" width="24" height="128" rx="6" fill="url(#grad)" fill-opacity="0.3"/>
+    
+    <!-- Right weight plate outer -->
+    <rect x="360" y="168" width="72" height="176" rx="12" fill="white"/>
+    <!-- Right weight plate inner -->
+    <rect x="384" y="192" width="24" height="128" rx="6" fill="url(#grad)" fill-opacity="0.3"/>
+    
+    <!-- Bar -->
+    <rect x="136" y="232" width="240" height="48" rx="24" fill="white"/>
+  </g>
+</svg>
