@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -41,7 +42,9 @@ export default function RegisterPageClerk() {
               Start your coaching trial—no credit card required.
             </p>
           </div>
-          <RegisterFormWithClerk />
+          <Suspense fallback={<div className='animate-pulse rounded-lg bg-muted/50 py-12' />}>
+            <RegisterFormWithClerk />
+          </Suspense>
           <p className='text-center text-xs text-muted-foreground'>
             Already have an account?{' '}
             <Button variant='link' asChild className='h-auto p-0 text-xs font-semibold text-primary'>
