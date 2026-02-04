@@ -6,12 +6,18 @@ import { useSignIn } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
-/** Clerk MCP: useSignIn – custom sign-in with identifier/password and OAuth redirect */
+/** Clerk custom sign-in with proper error handling per https://clerk.com/docs/guides/development/custom-flows/error-handling */
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  getClerkErrorMessage,
+  formatLockoutMessage,
+  isUserLockedError,
+  isPasswordCompromisedError
+} from '@/lib/auth/clerk-errors'
 
 export default function LoginFormWithClerk() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -36,7 +42,17 @@ export default function LoginFormWithClerk() {
         password
       })
       if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId })
+        await setActive({
+          session: result.createdSessionId,
+          navigate: async ({ session }) => {
+            if (session?.currentTask) {
+              // Session tasks (e.g. reset password required) - Clerk handles redirect
+              return
+            }
+            router.push(redirectUrl)
+            router.refresh()
+          }
+        })
         router.push(redirectUrl)
         router.refresh()
       } else {
@@ -49,13 +65,15 @@ export default function LoginFormWithClerk() {
         setError(statusMessage)
       }
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: Array< { message?: string; code?: string }> }
-      const msg = clerkErr?.errors?.[0]?.message
-      const code = clerkErr?.errors?.[0]?.code
-      if (msg) setError(msg)
-      else if (code === 'form_identifier_not_found') setError('No account found with this email. Sign up first or check the address.')
-      else if (code === 'form_password_incorrect') setError('Incorrect password. Try again or use "Forgot password".')
-      else setError('Sign in failed. Please try again.')
+      if (isUserLockedError(err)) {
+        setError(formatLockoutMessage(err))
+      } else if (isPasswordCompromisedError(err)) {
+        setError(
+          'Your password may be compromised. Please use "Forgot password" to reset it, or sign in with another method.'
+        )
+      } else {
+        setError(getClerkErrorMessage(err))
+      }
     } finally {
       setLoading(false)
     }
@@ -119,7 +137,10 @@ export default function LoginFormWithClerk() {
               Remember Me
             </Label>
           </div>
-            <Link href='/signup' className='hover:underline'>
+            <Link
+              href={redirectUrl !== '/dashboard' ? `/forgot-password?redirect_url=${encodeURIComponent(redirectUrl)}` : '/forgot-password'}
+              className='hover:underline'
+            >
               Forgot Password?
             </Link>
         </div>

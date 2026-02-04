@@ -8,6 +8,7 @@ import {
 } from '@clerk/nextjs'
 import { z } from 'zod'
 import Link from 'next/link'
+import { getClerkErrorMessage } from '@/lib/auth/clerk-errors'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -78,7 +79,7 @@ export function AccountPage() {
         await user?.update({ firstName, lastName })
         toast.success('Name updated')
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to update name')
+        toast.error(getClerkErrorMessage(err))
       }
     })
   }
@@ -99,7 +100,7 @@ export function AccountPage() {
         setEmailNeedsVerification(true)
         toast.success('Verification code sent')
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to update email')
+        toast.error(getClerkErrorMessage(err))
       }
     })
   }
@@ -124,7 +125,7 @@ export function AccountPage() {
           toast.error('Verification failed. Check the code and try again.')
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Verification failed')
+        toast.error(getClerkErrorMessage(err))
       }
     })
   }
@@ -147,7 +148,7 @@ export function AccountPage() {
         setConfirmPassword('')
         toast.success('Password updated')
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to update password')
+        toast.error(getClerkErrorMessage(err))
       }
     })
   }

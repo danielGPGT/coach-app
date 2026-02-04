@@ -6,12 +6,17 @@ import { useSignUp } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
-/** Clerk MCP: useSignUp – custom sign-up with optional email verification (email_code) */
+/** Clerk custom sign-up with email verification and proper error handling per Clerk docs */
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  getClerkErrorMessage,
+  formatLockoutMessage,
+  isUserLockedError
+} from '@/lib/auth/clerk-errors'
 
 export default function RegisterFormWithClerk() {
   const { signUp, setActive, isLoaded } = useSignUp()
@@ -27,9 +32,6 @@ export default function RegisterFormWithClerk() {
   const [pendingVerification, setPendingVerification] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  const getClerkError = (err: unknown) =>
-    (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || 'Something went wrong. Please try again.'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +63,11 @@ export default function RegisterFormWithClerk() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
       setPendingVerification(true)
     } catch (err) {
-      setError(getClerkError(err))
+      if (isUserLockedError(err)) {
+        setError(formatLockoutMessage(err))
+      } else {
+        setError(getClerkErrorMessage(err))
+      }
     } finally {
       setLoading(false)
     }
@@ -82,7 +88,11 @@ export default function RegisterFormWithClerk() {
         setError('Verification could not be completed.')
       }
     } catch (err) {
-      setError(getClerkError(err))
+      if (isUserLockedError(err)) {
+        setError(formatLockoutMessage(err))
+      } else {
+        setError(getClerkErrorMessage(err))
+      }
     } finally {
       setLoading(false)
     }
